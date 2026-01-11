@@ -57,6 +57,10 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
       })));
     }
 
+    if (!isCloudSyncAllowed()) {
+      setIsLoading(false);
+      return;
+    }
     getUserCloudData()
         .then((res: { accounts: Account[]; balances: Balance[] } | null) => {
 
