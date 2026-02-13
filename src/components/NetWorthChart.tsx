@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -18,6 +18,7 @@ import { Line } from 'react-chartjs-2';
 import 'chartjs-adapter-date-fns';
 import { Balance, Account } from '@/types/finance';
 import { useCurrency } from '@/context/CurrencyContext';
+import { useTheme } from '@/context/ThemeContext';
 
 ChartJS.register(
   CategoryScale,
@@ -44,8 +45,13 @@ interface NetWorthDataPoint {
   netWorth: number;
 }
 
-export const NetWorthChart: React.FC<NetWorthChartProps> = ({ accounts, balances, height = 400 }) => {
+export const NetWorthChart = ({ accounts, balances, height = 400 }: NetWorthChartProps) => {
   const { formatCurrency, selectedCurrency } = useCurrency();
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === 'dark';
+
+  const textColor = isDark ? '#e5e5e5' : '#374151';
+  const gridColor = isDark ? 'rgba(163, 163, 163, 0.2)' : 'rgba(0, 0, 0, 0.1)';
 
   const netWorthData = useMemo(() => {
     // Get all unique dates from balances
@@ -67,7 +73,7 @@ export const NetWorthChart: React.FC<NetWorthChartProps> = ({ accounts, balances
 
         if (accountBalances.length > 0) {
           const mostRecentBalance = accountBalances[0].amount;
-          
+
           if (account.type === 'asset') {
             totalAssets += mostRecentBalance;
           } else if (account.type === 'liability') {
@@ -89,8 +95,8 @@ export const NetWorthChart: React.FC<NetWorthChartProps> = ({ accounts, balances
 
   if (netWorthData.length === 0) {
     return (
-      <div className="flex items-center justify-center h-64 bg-gray-50 rounded-lg">
-        <p className="text-gray-500">No data available for net worth tracking</p>
+      <div className="flex items-center justify-center h-64 bg-gray-50 dark:bg-neutral-700/50 rounded-lg">
+        <p className="text-gray-500 dark:text-neutral-400">No data available for net worth tracking</p>
       </div>
     );
   }
@@ -134,10 +140,12 @@ export const NetWorthChart: React.FC<NetWorthChartProps> = ({ accounts, balances
     plugins: {
       legend: {
         position: 'top' as const,
+        labels: { color: textColor },
       },
       title: {
         display: true,
         text: 'Net Worth Over Time',
+        color: textColor,
         font: {
           size: 16,
           weight: 'bold' as const,
@@ -145,7 +153,7 @@ export const NetWorthChart: React.FC<NetWorthChartProps> = ({ accounts, balances
       },
       tooltip: {
         callbacks: {
-          label: function(context: TooltipItem<'line'>) {
+          label: function (context: TooltipItem<'line'>) {
             const y = context.parsed.y;
             return y == null ? 'Balance: N/A' : `Balance: ${formatCurrency(y)}`;
           },
@@ -161,18 +169,24 @@ export const NetWorthChart: React.FC<NetWorthChartProps> = ({ accounts, balances
         title: {
           display: true,
           text: 'Date',
+          color: textColor,
         },
+        ticks: { color: textColor },
+        grid: { color: gridColor },
       },
       y: {
         title: {
           display: true,
           text: `Amount (${selectedCurrency.symbol})`,
+          color: textColor,
         },
         ticks: {
-          callback: function(value: number | string) {
+          color: textColor,
+          callback: function (value: number | string) {
             return formatCurrency(Number(value));
           },
         },
+        grid: { color: gridColor },
       },
     },
     interaction: {
@@ -185,42 +199,40 @@ export const NetWorthChart: React.FC<NetWorthChartProps> = ({ accounts, balances
   const latestData = netWorthData[netWorthData.length - 1];
   const firstData = netWorthData[0];
   const netWorthChange = latestData.netWorth - firstData.netWorth;
-  const netWorthChangePercent = firstData.netWorth !== 0 
-    ? ((latestData.netWorth - firstData.netWorth) / Math.abs(firstData.netWorth)) * 100 
+  const netWorthChangePercent = firstData.netWorth !== 0
+    ? ((latestData.netWorth - firstData.netWorth) / Math.abs(firstData.netWorth)) * 100
     : 0;
 
   return (
     <div className="space-y-6">
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
-          <h3 className="font-semibold text-blue-800 mb-2">Current Net Worth</h3>
-          <div className={`text-2xl font-bold ${
-            latestData.netWorth >= 0 ? 'text-blue-600' : 'text-red-600'
-          }`}>
+        <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
+          <h3 className="font-semibold text-blue-800 dark:text-blue-300 mb-2">Current Net Worth</h3>
+          <div className={`text-2xl font-bold ${latestData.netWorth >= 0 ? 'text-blue-600 dark:text-blue-400' : 'text-red-600 dark:text-red-400'
+            }`}>
             {formatCurrency(latestData.netWorth)}
           </div>
         </div>
-        
-        <div className="bg-green-50 rounded-lg p-4 border border-green-200">
-          <h3 className="font-semibold text-green-800 mb-2">Total Assets</h3>
-          <div className="text-2xl font-bold text-green-600">
+
+        <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 border border-green-200 dark:border-green-800">
+          <h3 className="font-semibold text-green-800 dark:text-green-300 mb-2">Total Assets</h3>
+          <div className="text-2xl font-bold text-green-600 dark:text-green-400">
             {formatCurrency(latestData.assets)}
           </div>
         </div>
-        
-        <div className="bg-red-50 rounded-lg p-4 border border-red-200">
-          <h3 className="font-semibold text-red-800 mb-2">Total Liabilities</h3>
-          <div className="text-2xl font-bold text-red-600">
+
+        <div className="bg-red-50 dark:bg-red-900/20 rounded-lg p-4 border border-red-200 dark:border-red-800">
+          <h3 className="font-semibold text-red-800 dark:text-red-300 mb-2">Total Liabilities</h3>
+          <div className="text-2xl font-bold text-red-600 dark:text-red-400">
             {formatCurrency(latestData.liabilities)}
           </div>
         </div>
-        
-        <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-          <h3 className="font-semibold text-gray-800 mb-2">Change</h3>
-          <div className={`text-lg font-bold ${
-            netWorthChange >= 0 ? 'text-green-600' : 'text-red-600'
-          }`}>
+
+        <div className="bg-gray-50 dark:bg-neutral-700/50 rounded-lg p-4 border border-gray-200 dark:border-neutral-600">
+          <h3 className="font-semibold text-gray-800 dark:text-neutral-200 mb-2">Change</h3>
+          <div className={`text-lg font-bold ${netWorthChange >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
+            }`}>
             <div>{formatCurrency(netWorthChange)}</div>
             <div className="text-sm">
               ({netWorthChange >= 0 ? '+' : ''}{netWorthChangePercent.toFixed(1)}%)
@@ -230,7 +242,7 @@ export const NetWorthChart: React.FC<NetWorthChartProps> = ({ accounts, balances
       </div>
 
       {/* Chart */}
-      <div className="bg-white rounded-lg border p-4">
+      <div className="bg-white dark:bg-neutral-800 rounded-lg border dark:border-neutral-600 p-4">
         <div style={{ height: `${height}px` }} className="w-full">
           <Line data={data} options={options} />
         </div>

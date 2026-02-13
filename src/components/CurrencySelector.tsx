@@ -10,10 +10,10 @@ interface CurrencySelectorProps {
   showLabel?: boolean;
 }
 
-export const CurrencySelector: React.FC<CurrencySelectorProps> = ({ 
-  className = '', 
+export const CurrencySelector: React.FC<CurrencySelectorProps> = ({
+  className = '',
   size = 'md',
-  showLabel = true 
+  showLabel = true
 }) => {
   const { selectedCurrency, setSelectedCurrency } = useCurrency();
   const { trackEvent } = useAnalytics();
@@ -39,7 +39,7 @@ export const CurrencySelector: React.FC<CurrencySelectorProps> = ({
   return (
     <div className={`flex flex-col ${className}`}>
       {showLabel && (
-        <label htmlFor="currency-select" className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="currency-select" className="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-1">
           Currency
         </label>
       )}
@@ -49,9 +49,9 @@ export const CurrencySelector: React.FC<CurrencySelectorProps> = ({
         onChange={(e) => handleCurrencyChange(e.target.value)}
         className={`
           ${sizeClasses[size]}
-          border border-gray-300 rounded-md shadow-sm 
+          border border-gray-300 dark:border-neutral-600 rounded-md shadow-sm 
           focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
-          bg-white text-gray-900
+          bg-white dark:bg-neutral-700 text-gray-900 dark:text-neutral-100
           ${className}
         `}
       >

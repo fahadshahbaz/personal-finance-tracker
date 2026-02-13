@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import { useState, type FormEvent } from 'react';
 import { useFinance } from '@/context/FinanceContext';
 import { AccountType, ACCOUNT_CATEGORIES } from '@/types/finance';
 import { useAnalytics } from '@/hooks/useAnalytics';
@@ -9,7 +9,7 @@ interface AddAccountFormProps {
   onSuccess?: () => void;
 }
 
-export const AddAccountForm: React.FC<AddAccountFormProps> = ({ onSuccess }) => {
+export const AddAccountForm = ({ onSuccess }: AddAccountFormProps) => {
   const { addAccount } = useFinance();
   const { trackEvent } = useAnalytics();
   const [formData, setFormData] = useState({
@@ -26,7 +26,7 @@ export const AddAccountForm: React.FC<AddAccountFormProps> = ({ onSuccess }) => 
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     if (!formData.name.trim() || !formData.category) return;
 
@@ -55,7 +55,7 @@ export const AddAccountForm: React.FC<AddAccountFormProps> = ({ onSuccess }) => 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <label htmlFor="accountName" className="block text-sm font-medium text-gray-700 mb-2">
+        <label htmlFor="accountName" className="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-2">
           Account Name
         </label>
         <input
@@ -63,21 +63,21 @@ export const AddAccountForm: React.FC<AddAccountFormProps> = ({ onSuccess }) => 
           id="accountName"
           value={formData.name}
           onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="w-full px-3 py-2 border border-gray-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-neutral-700 text-gray-900 dark:text-neutral-100"
           placeholder="e.g., Checking Account, Credit Card, etc."
           required
         />
       </div>
 
       <div>
-        <label htmlFor="accountType" className="block text-sm font-medium text-gray-700 mb-2">
+        <label htmlFor="accountType" className="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-2">
           Account Type
         </label>
         <select
           id="accountType"
           value={formData.type}
           onChange={(e) => handleTypeChange(e.target.value as AccountType)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="w-full px-3 py-2 border border-gray-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-neutral-700 text-gray-900 dark:text-neutral-100"
         >
           <option value="asset">Asset</option>
           <option value="liability">Liability</option>
@@ -86,14 +86,14 @@ export const AddAccountForm: React.FC<AddAccountFormProps> = ({ onSuccess }) => 
       </div>
 
       <div>
-        <label htmlFor="accountCategory" className="block text-sm font-medium text-gray-700 mb-2">
+        <label htmlFor="accountCategory" className="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-2">
           Category
         </label>
         <select
           id="accountCategory"
           value={formData.category}
           onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="w-full px-3 py-2 border border-gray-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-neutral-700 text-gray-900 dark:text-neutral-100"
         >
           {ACCOUNT_CATEGORIES[formData.type].map((category) => (
             <option key={category} value={category}>
@@ -105,7 +105,7 @@ export const AddAccountForm: React.FC<AddAccountFormProps> = ({ onSuccess }) => 
 
       <button
         type="submit"
-        className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+        className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-neutral-800 transition-colors"
       >
         Add Account
       </button>

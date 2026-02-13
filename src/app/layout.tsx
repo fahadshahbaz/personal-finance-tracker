@@ -46,7 +46,7 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-white dark:bg-gray-950 min-h-screen transition-colors duration-200`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-white dark:bg-neutral-950 min-h-screen transition-colors duration-200`}
       >
         <GoogleAnalytics />
         <AuthProvider>
@@ -55,13 +55,13 @@ export default function RootLayout({
               <ThemeProvider>
                 <ClientOnly
                   fallback={
-                    <nav className="bg-white dark:bg-gray-900 shadow-lg border-b dark:border-gray-700">
+                    <nav className="bg-white dark:bg-neutral-900 shadow-lg border-b dark:border-neutral-700">
                       <div className="max-w-6xl mx-auto px-4">
                         <div className="flex justify-between items-center py-4">
                           <div className="flex items-center space-x-2">
                             <span className="text-2xl">📈</span>
-                            <span className="text-xl font-bold text-gray-800 dark:text-gray-100 hidden sm:block">Personal Finance Tracker</span>
-                            <span className="text-lg font-bold text-gray-800 dark:text-gray-100 sm:hidden">Finance Tracker</span>
+                            <span className="text-xl font-bold text-gray-800 dark:text-neutral-200 hidden sm:block">Personal Finance Tracker</span>
+                            <span className="text-lg font-bold text-gray-800 dark:text-neutral-200 sm:hidden">Finance Tracker</span>
                           </div>
                         </div>
                       </div>

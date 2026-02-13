@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, type FormEvent } from 'react';
 import { useFinance } from '@/context/FinanceContext';
 import { useCurrency } from '@/context/CurrencyContext';
 
@@ -9,7 +9,7 @@ interface BalanceInput {
   amount: string;
 }
 
-export const RecordBalances: React.FC = () => {
+export const RecordBalances = () => {
   const { accounts, balances, getAccountsWithBalances, updateMultipleBalances } = useFinance();
   const { formatCurrency } = useCurrency();
   const [balanceInputs, setBalanceInputs] = useState<BalanceInput[]>([]);
@@ -27,7 +27,7 @@ export const RecordBalances: React.FC = () => {
       }))
     );
   }, [accounts, getAccountsWithBalances]);
-  
+
   const handleAmountChange = (accountId: string, value: string) => {
     // Allow empty string, numbers, and decimal points
     if (value === '' || /^-?\d*\.?\d*$/.test(value)) {
@@ -39,7 +39,7 @@ export const RecordBalances: React.FC = () => {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
@@ -98,28 +98,28 @@ export const RecordBalances: React.FC = () => {
   if (accounts.length === 0) {
     return (
       <div className="text-center py-12">
-        <div className="text-gray-500 text-lg mb-4">No accounts to update</div>
-        <p className="text-gray-400">Add some accounts first to record their balances.</p>
+        <div className="text-gray-500 dark:text-neutral-400 text-lg mb-4">No accounts to update</div>
+        <p className="text-gray-400 dark:text-neutral-500">Add some accounts first to record their balances.</p>
       </div>
     );
   }
 
   return (
     <div className="max-w-4xl mx-auto">
-      <div className="bg-white rounded-lg shadow-lg p-6">
+      <div className="bg-white dark:bg-neutral-800 rounded-lg shadow-lg dark:shadow-neutral-900/50 p-6">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">Record Account Balances</h1>
-          <p className="text-gray-600">Update the current balances for your accounts</p>
+          <h1 className="text-3xl font-bold text-gray-800 dark:text-neutral-100 mb-2">Record Account Balances</h1>
+          <p className="text-gray-600 dark:text-neutral-400">Update the current balances for your accounts</p>
         </div>
 
         {successMessage && (
-          <div className="mb-6 p-4 bg-green-100 border border-green-400 text-green-700 rounded-md">
+          <div className="mb-6 p-4 bg-green-100 dark:bg-green-900/30 border border-green-400 dark:border-green-700 text-green-700 dark:text-green-300 rounded-md">
             {successMessage}
           </div>
         )}
 
         <div className="mb-6">
-          <label htmlFor="balance-date" className="block text-sm font-medium text-gray-700 mb-2">
+          <label htmlFor="balance-date" className="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-2">
             Balance Date
           </label>
           <input
@@ -127,38 +127,38 @@ export const RecordBalances: React.FC = () => {
             id="balance-date"
             value={selectedDate}
             onChange={(e) => setSelectedDate(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="px-3 py-2 border border-gray-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-neutral-700 text-gray-900 dark:text-neutral-100"
           />
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="text-sm text-gray-500 dark:text-neutral-400 mt-1">
             Record balances for this specific date. Defaults to today.
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-8">
           {Object.entries(groupedAccounts).map(([type, categories]) => (
-            <div key={type} className="border rounded-lg p-4">
-              <h2 className="text-xl font-bold text-gray-800 mb-4 capitalize">
+            <div key={type} className="border dark:border-neutral-600 rounded-lg p-4">
+              <h2 className="text-xl font-bold text-gray-800 dark:text-neutral-100 mb-4 capitalize">
                 {type === 'asset' ? 'Assets' : type === 'liability' ? 'Liabilities' : 'Equity'}
               </h2>
-              
+
               {Object.entries(categories).map(([category, categoryAccounts]) => (
                 <div key={category} className="mb-6">
-                  <h3 className="text-lg font-semibold text-gray-700 mb-3">{category}</h3>
+                  <h3 className="text-lg font-semibold text-gray-700 dark:text-neutral-300 mb-3">{category}</h3>
                   <div className="space-y-3">
                     {categoryAccounts.map((account) => {
                       const input = balanceInputs.find(input => input.accountId === account.id);
                       const currentBalance = account.currentBalance;
-                      
+
                       return (
-                        <div key={account.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div key={account.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-neutral-700/50 rounded-lg">
                           <div className="flex-1">
-                            <div className="font-medium text-gray-800">{account.name}</div>
-                            <div className="text-sm text-gray-500">
+                            <div className="font-medium text-gray-800 dark:text-neutral-200">{account.name}</div>
+                            <div className="text-sm text-gray-500 dark:text-neutral-400">
                               Current: {formatCurrency(currentBalance)}
                             </div>
                           </div>
                           <div className="flex items-center space-x-3">
-                            <label htmlFor={`balance-${account.id}`} className="text-sm font-medium text-gray-700">
+                            <label htmlFor={`balance-${account.id}`} className="text-sm font-medium text-gray-700 dark:text-neutral-300">
                               New Balance:
                             </label>
                             <input
@@ -166,7 +166,7 @@ export const RecordBalances: React.FC = () => {
                               id={`balance-${account.id}`}
                               value={input?.amount || ''}
                               onChange={(e) => handleAmountChange(account.id, e.target.value)}
-                              className="w-32 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-right"
+                              className="w-32 px-3 py-2 border border-gray-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-right bg-white dark:bg-neutral-700 text-gray-900 dark:text-neutral-100"
                               placeholder="0.00"
                             />
                           </div>
@@ -183,7 +183,7 @@ export const RecordBalances: React.FC = () => {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-8 py-3 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="px-8 py-3 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-neutral-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {isSubmitting ? 'Updating...' : 'Update All Balances'}
             </button>

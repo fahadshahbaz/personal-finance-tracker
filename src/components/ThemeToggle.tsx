@@ -37,7 +37,7 @@ export const ThemeToggle = ({ className = '' }: ThemeToggleProps) => {
             onClick={cycleTheme}
             className={`flex items-center space-x-1.5 px-3 py-2 rounded-md text-sm font-medium transition-colors
         text-gray-600 hover:text-gray-900 hover:bg-gray-100
-        dark:text-gray-300 dark:hover:text-gray-100 dark:hover:bg-gray-700
+        dark:text-neutral-400 dark:hover:text-neutral-200 dark:hover:bg-neutral-700
         ${className}`}
             aria-label={`Theme: ${getLabel()}. Click to change.`}
             title={`Theme: ${getLabel()}`}
