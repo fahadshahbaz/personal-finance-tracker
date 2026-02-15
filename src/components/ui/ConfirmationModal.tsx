@@ -34,6 +34,9 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
         if (isOpen) {
             previousFocusRef.current = document.activeElement as HTMLElement;
             setIsRendered(true);
+
+            // Increment modal counter or just set hidden
+            const originalOverflow = document.body.style.overflow;
             document.body.style.overflow = 'hidden';
 
             // Slight delay to ensure focusable elements are in DOM
@@ -45,10 +48,20 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
                     (focusableElements[0] as HTMLElement).focus();
                 }
             }, 50);
-            return () => clearTimeout(timer);
+
+            return () => {
+                clearTimeout(timer);
+                // Check if other modals are still open before unsetting
+                const otherModals = document.querySelectorAll('[role="dialog"]').length;
+                if (otherModals <= 1) {
+                    document.body.style.overflow = originalOverflow === 'hidden' ? '' : originalOverflow;
+                }
+            };
         } else {
-            const timer = setTimeout(() => setIsRendered(false), 300);
-            document.body.style.overflow = 'unset';
+            const timer = setTimeout(() => {
+                setIsRendered(false);
+                setChallengeValue(''); // Reset challenge when closed
+            }, 300);
 
             // Restore focus
             if (previousFocusRef.current) {
@@ -136,14 +149,14 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
         >
             {/* Backdrop */}
             <div
-                className="fixed inset-0 bg-neutral-900/30 backdrop-blur-sm transition-opacity"
+                className="fixed inset-0 bg-gray-900/30 backdrop-blur-sm transition-opacity"
                 onClick={onClose}
             />
 
             {/* Modal Container */}
             <div
                 ref={modalRef}
-                className={`relative w-full max-w-md transform overflow-hidden rounded-3xl bg-white p-8 shadow-[0_20px_50px_rgba(0,0,0,0.15)] transition-all duration-300 border border-neutral-100 ${isOpen ? 'scale-100 translate-y-0 opacity-100' : 'scale-95 translate-y-4 opacity-0'
+                className={`relative w-full max-w-md transform overflow-hidden rounded-3xl bg-white p-8 shadow-[0_20px_50px_rgba(0,0,0,0.15)] transition-all duration-300 border border-gray-100 ${isOpen ? 'scale-100 translate-y-0 opacity-100' : 'scale-95 translate-y-4 opacity-0'
                     }`}
             >
                 <div className="flex items-center space-x-3 mb-4">
@@ -153,21 +166,25 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
                     </h3>
                 </div>
 
-                <p id="modal-description" className="text-neutral-600 mb-8 leading-relaxed text-lg">
+                <p id="modal-description" className="text-gray-600 mb-8 leading-relaxed text-lg">
                     {message}
                 </p>
 
                 {requiresChallenge && (
                     <div className="mb-8">
-                        <label className="block text-sm font-bold text-neutral-500 uppercase tracking-wider mb-2">
+                        <label
+                            htmlFor="challenge-input"
+                            className="block text-sm font-bold text-gray-500 uppercase tracking-wider mb-2 cursor-pointer"
+                        >
                             Type <span className="text-red-600">DELETE</span> to confirm
                         </label>
                         <input
+                            id="challenge-input"
                             type="text"
                             value={challengeValue}
                             onChange={(e) => setChallengeValue(e.target.value)}
                             placeholder="DELETE"
-                            className="w-full px-5 py-4 rounded-2xl border-2 border-neutral-100 bg-neutral-50 text-neutral-900 focus:border-red-500 focus:ring-0 transition-all outline-none font-bold text-lg placeholder:text-neutral-300"
+                            className="w-full px-5 py-4 rounded-2xl border-2 border-gray-100 bg-gray-50 text-gray-900 focus:border-red-500 focus:ring-0 transition-all outline-none font-bold text-lg placeholder:text-gray-300"
                         />
                     </div>
                 )}
@@ -179,13 +196,15 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
                             setChallengeValue('');
                         }}
                         disabled={isConfirmDisabled}
-                        className={`flex-[2] py-4 rounded-2xl font-bold text-lg transition-all active:scale-[0.98] cursor-pointer disabled:opacity-30 disabled:grayscale disabled:cursor-not-allowed ${styles.button}`}
+                        aria-label={`${confirmText} ${title}`}
+                        className={`flex-[2] py-4 rounded-2xl font-bold text-lg transition-all active:scale-[0.98] disabled:opacity-30 disabled:grayscale disabled:cursor-not-allowed ${styles.button}`}
                     >
                         {confirmText}
                     </button>
                     <button
                         onClick={onClose}
-                        className="flex-1 py-4 rounded-2xl font-bold text-lg bg-neutral-100 text-neutral-600 hover:bg-neutral-200 cursor-pointer transition-all active:scale-[0.98]"
+                        aria-label={`${cancelText} ${title}`}
+                        className="flex-1 py-4 rounded-2xl font-bold text-lg bg-gray-100 text-gray-600 hover:bg-gray-200 transition-all active:scale-[0.98]"
                     >
                         {cancelText}
                     </button>

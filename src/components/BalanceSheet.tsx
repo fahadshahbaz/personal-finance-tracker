@@ -216,8 +216,17 @@ export const BalanceSheet: React.FC = () => {
             setAccountToDelete(null);
           }
         }}
-        title={accountToDelete?.name.toLowerCase().includes('card') ? 'Delete Card' : 'Delete Account'}
-        message={`Are you sure you want to delete "${accountToDelete?.name}"? This will also remove all associated balance history. This action cannot be undone.`}
+        title={
+          accountToDelete?.category === 'Credit Cards'
+            ? 'Remove Card Record'
+            : accountToDelete?.category === 'Cash and Cash Equivalents'
+              ? 'Remove Cash Account'
+              : `Remove ${accountToDelete?.category || 'Account'} Record`
+        }
+        message={`Are you sure you want to delete "${accountToDelete?.name && accountToDelete.name.length > 50
+          ? accountToDelete.name.substring(0, 50) + '...'
+          : accountToDelete?.name
+          }"? This will also remove all associated balance history. This action cannot be undone.`}
         confirmText="Delete"
         variant="danger"
       />
