@@ -1,15 +1,14 @@
 'use client';
 
-import React from 'react';
+import { type ReactNode } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import LoginPage from '@/components/LoginPage';
-import WelcomeScreen from '@/components/WelcomeScreen';
 
 interface ProtectedRouteProps {
-  children: React.ReactNode;
+  children: ReactNode;
 }
 
-const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
+const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const { user, isLoading, isAuthConfigured } = useAuth();
 
   // If Auth0 is not configured, bypass login and show WelcomeScreen for new users
@@ -21,10 +20,10 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   if (isLoading) {
     return (
       <div className="max-w-4xl mx-auto">
-        <div className="bg-white rounded-lg shadow-lg p-6">
+        <div className="bg-white dark:bg-neutral-800 rounded-lg shadow-lg dark:shadow-neutral-900/50 p-6">
           <div className="text-center py-12">
-            <div className="text-gray-500 text-lg mb-4">Loading...</div>
-            <p className="text-gray-400">Please wait while we authenticate you.</p>
+            <div className="text-gray-500 dark:text-neutral-400 text-lg mb-4">Loading...</div>
+            <p className="text-gray-400 dark:text-neutral-500">Please wait while we authenticate you.</p>
           </div>
         </div>
       </div>

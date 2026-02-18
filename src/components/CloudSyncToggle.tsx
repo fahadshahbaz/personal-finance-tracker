@@ -27,13 +27,13 @@ export function CloudSyncToggle() {
     }
 
     setEnabled(newState);
-      
+
     setLoading(false);
   }
 
   return (
     <div className="flex items-center">
-      <label htmlFor="cloud-sync-toggle" className="mr-4 text-gray-700">
+      <label htmlFor="cloud-sync-toggle" className="mr-4 text-gray-700 dark:text-neutral-300">
         Cloud Sync
       </label>
       <button
@@ -42,22 +42,20 @@ export function CloudSyncToggle() {
           if (loading) return;
           if (enabled) {
             // Confirm disabling cloud sync
-              if (confirm("Are you sure you want to disable cloud sync? Your data will no longer be backed up to the cloud.")) {
-                onToggle(false);
-              }
+            if (confirm("Are you sure you want to disable cloud sync? Your data will no longer be backed up to the cloud.")) {
+              onToggle(false);
+            }
           } else {
             onToggle(true);
           }
         }}
         disabled={loading}
-        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${
-          enabled ? 'bg-blue-600' : 'bg-gray-300'
-        } ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${enabled ? 'bg-blue-600' : 'bg-gray-300 dark:bg-neutral-600'
+          } ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
       >
         <span
-          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-        enabled ? 'translate-x-5' : 'translate-x-1'
-          } ${loading ? 'animate-pulse' : ''}`}
+          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${enabled ? 'translate-x-5' : 'translate-x-1'
+            } ${loading ? 'animate-pulse' : ''}`}
         />
       </button>
     </div>
