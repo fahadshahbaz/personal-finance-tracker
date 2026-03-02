@@ -25,6 +25,7 @@ export const CurrencySelector: React.FC<CurrencySelectorProps> = ({
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [activeRegion, setActiveRegion] = useState<string>('All');
+  const [focusedIndex, setFocusedIndex] = useState(-1);
 
   // Arrow visibility state
   const [showLeftArrow, setShowLeftArrow] = useState(false);
@@ -33,6 +34,7 @@ export const CurrencySelector: React.FC<CurrencySelectorProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
   const tabsRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
 
   // ── Outside click ──────────────────────────────────────────────────────────
   useEffect(() => {
@@ -40,6 +42,7 @@ export const CurrencySelector: React.FC<CurrencySelectorProps> = ({
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
         setIsOpen(false);
         setSearch('');
+        setFocusedIndex(-1);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -50,20 +53,9 @@ export const CurrencySelector: React.FC<CurrencySelectorProps> = ({
   useEffect(() => {
     if (isOpen) {
       setTimeout(() => searchRef.current?.focus(), 50);
+      setFocusedIndex(-1);
     }
   }, [isOpen]);
-
-  // ── Escape key ────────────────────────────────────────────────────────────
-  useEffect(() => {
-    const handleKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        setIsOpen(false);
-        setSearch('');
-      }
-    };
-    document.addEventListener('keydown', handleKey);
-    return () => document.removeEventListener('keydown', handleKey);
-  }, []);
 
   // ── Region-tabs scroll arrows ──────────────────────────────────────────────
   const updateArrows = useCallback(() => {
@@ -102,6 +94,7 @@ export const CurrencySelector: React.FC<CurrencySelectorProps> = ({
       setSelectedCurrency(currency);
       setIsOpen(false);
       setSearch('');
+      setFocusedIndex(-1);
     },
     [selectedCurrency.code, setSelectedCurrency, trackEvent]
   );
@@ -119,6 +112,48 @@ export const CurrencySelector: React.FC<CurrencySelectorProps> = ({
     return matchesSearch && matchesRegion;
   });
 
+  // Reset focused index when list changes
+  useEffect(() => {
+    setFocusedIndex(-1);
+  }, [query, activeRegion]);
+
+  // ── Keyboard navigation ────────────────────────────────────────────────────
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (!isOpen) return;
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setFocusedIndex((i) => Math.min(i + 1, filteredCurrencies.length - 1));
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setFocusedIndex((i) => Math.max(i - 1, 0));
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      if (focusedIndex >= 0 && focusedIndex < filteredCurrencies.length) {
+        handleSelect(filteredCurrencies[focusedIndex]);
+      }
+    } else if (e.key === 'Escape') {
+      setIsOpen(false);
+      setSearch('');
+      setFocusedIndex(-1);
+    } else if (e.key === 'Home') {
+      e.preventDefault();
+      setFocusedIndex(0);
+    } else if (e.key === 'End') {
+      e.preventDefault();
+      setFocusedIndex(filteredCurrencies.length - 1);
+    }
+  };
+
+  // Scroll focused item into view
+  useEffect(() => {
+    if (focusedIndex < 0 || !listRef.current) return;
+    const item = listRef.current.querySelector<HTMLElement>(
+      `[data-index="${focusedIndex}"]`
+    );
+    item?.scrollIntoView({ block: 'nearest' });
+  }, [focusedIndex]);
+
   // ── Grouping ──────────────────────────────────────────────────────────────
   const regionGroups: { region: string; currencies: Currency[] }[] = [];
   if (activeRegion === 'All' && !query) {
@@ -131,10 +166,17 @@ export const CurrencySelector: React.FC<CurrencySelectorProps> = ({
 
   const regions = ['All', ...CURRENCY_REGIONS];
 
+  // Flat index map for keyboard nav (needed because of region group headers)
+  let flatIndex = -1;
+
   return (
     <div className={`relative ${className}`} ref={containerRef}>
+      {/* FIX #4: label is now associated with the trigger button via htmlFor */}
       {showLabel && (
-        <label className="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-1.5">
+        <label
+          htmlFor="currency-select"
+          className="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-1.5"
+        >
           Currency
         </label>
       )}
@@ -157,6 +199,7 @@ export const CurrencySelector: React.FC<CurrencySelectorProps> = ({
         "
         aria-haspopup="listbox"
         aria-expanded={isOpen}
+        aria-controls="currency-listbox"
       >
         <span className="flex items-center gap-2.5 min-w-0">
           <span className="text-xl leading-none shrink-0">{selectedCurrency.flag}</span>
@@ -178,8 +221,10 @@ export const CurrencySelector: React.FC<CurrencySelectorProps> = ({
       {/* ── Dropdown panel ─────────────────────────────────────────────────── */}
       {isOpen && (
         <div
+          id="currency-listbox"
           className="
-            absolute z-50 mt-2 w-full min-w-[320px] max-w-md
+            absolute z-50 mt-2 w-full min-w-[280px] max-w-md
+            right-0
             bg-white dark:bg-neutral-900
             border border-gray-200 dark:border-neutral-700
             rounded-xl shadow-xl shadow-black/10 dark:shadow-black/40
@@ -188,6 +233,9 @@ export const CurrencySelector: React.FC<CurrencySelectorProps> = ({
           style={{ maxHeight: '400px' }}
           role="listbox"
           aria-label="Select currency"
+          aria-activedescendant={
+            focusedIndex >= 0 ? `currency-option-${filteredCurrencies[focusedIndex]?.code}` : undefined
+          }
         >
           {/* Search + tab strip */}
           <div className="p-3 border-b border-gray-100 dark:border-neutral-800">
@@ -206,14 +254,19 @@ export const CurrencySelector: React.FC<CurrencySelectorProps> = ({
               <input
                 ref={searchRef}
                 type="text"
+                role="combobox"
+                aria-expanded={isOpen}
+                aria-controls="currency-listbox"
+                aria-autocomplete="list"
                 value={search}
                 onChange={(e) => {
                   setSearch(e.target.value);
                   setActiveRegion('All');
                 }}
+                onKeyDown={handleSearchKeyDown}
                 placeholder="Search currency, code or region…"
                 className="
-                  w-full pl-9 pr-3 py-2 text-sm rounded-lg
+                  w-full pl-9 pr-8 py-2 text-sm rounded-lg
                   bg-gray-50 dark:bg-neutral-800
                   border border-gray-200 dark:border-neutral-700
                   text-gray-900 dark:text-neutral-100
@@ -222,8 +275,11 @@ export const CurrencySelector: React.FC<CurrencySelectorProps> = ({
                   transition-all
                 "
               />
+              {/* FIX #1: type="button" + aria-label added */}
               {search && (
                 <button
+                  type="button"
+                  aria-label="Clear search"
                   onClick={() => setSearch('')}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-neutral-300 transition-colors"
                 >
@@ -247,6 +303,7 @@ export const CurrencySelector: React.FC<CurrencySelectorProps> = ({
                     bg-gradient-to-r from-white dark:from-neutral-900 to-transparent
                   ">
                     <button
+                      type="button"
                       onClick={() => scrollTabs('left')}
                       aria-label="Scroll regions left"
                       className="
@@ -279,6 +336,7 @@ export const CurrencySelector: React.FC<CurrencySelectorProps> = ({
                   {regions.map((region) => (
                     <button
                       key={region}
+                      type="button"
                       onClick={() => setActiveRegion(region)}
                       className={`
                         shrink-0 px-2.5 py-1 text-xs rounded-full font-medium transition-all duration-150
@@ -302,6 +360,7 @@ export const CurrencySelector: React.FC<CurrencySelectorProps> = ({
                     bg-gradient-to-l from-white dark:from-neutral-900 to-transparent
                   ">
                     <button
+                      type="button"
                       onClick={() => scrollTabs('right')}
                       aria-label="Scroll regions right"
                       className="
@@ -326,7 +385,7 @@ export const CurrencySelector: React.FC<CurrencySelectorProps> = ({
           </div>
 
           {/* ── Currency list ───────────────────────────────────────────────── */}
-          <div className="overflow-y-auto flex-1">
+          <div className="overflow-y-auto flex-1" ref={listRef}>
             {filteredCurrencies.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-10 text-gray-400 dark:text-neutral-500">
                 <span className="text-3xl mb-2">🔍</span>
@@ -344,19 +403,28 @@ export const CurrencySelector: React.FC<CurrencySelectorProps> = ({
                       </div>
                     )}
                     {currencies.map((currency) => {
+                      flatIndex += 1;
+                      const currentIndex = flatIndex;
                       const isSelected = selectedCurrency.code === currency.code;
+                      const isFocused = focusedIndex === currentIndex;
                       return (
                         <button
                           key={currency.code}
+                          id={`currency-option-${currency.code}`}
+                          data-index={currentIndex}
+                          type="button"
                           role="option"
                           aria-selected={isSelected}
                           onClick={() => handleSelect(currency)}
+                          onMouseEnter={() => setFocusedIndex(currentIndex)}
                           className={`
                             w-full flex items-center gap-3 px-3 py-2.5
                             text-left text-sm transition-colors duration-100
-                            ${isSelected
-                              ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300'
-                              : 'text-gray-800 dark:text-neutral-200 hover:bg-gray-50 dark:hover:bg-neutral-800'
+                            ${isFocused && !isSelected
+                              ? 'bg-gray-100 dark:bg-neutral-800'
+                              : isSelected
+                                ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300'
+                                : 'text-gray-800 dark:text-neutral-200 hover:bg-gray-50 dark:hover:bg-neutral-800'
                             }
                           `}
                         >
